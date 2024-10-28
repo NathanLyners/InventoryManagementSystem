@@ -1,56 +1,30 @@
-name: CI/CD Pipeline
-
-on:
-  push:
-    branches:
-      - main
-
+name: GitHub Actions Demo
+run-name: ${{ github.actor }} is testing out GitHub Actions 
+on: [push]
 jobs:
-  build:
-    runs-on: windows-latest
+  Explore-GitHub-Actions:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build the project
-        run: npm run build
-
-  test:
-    runs-on: windows-latest
-    needs: build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
-      - name: Run tests
-        run: npm test
-
-      - name: Run code quality checks
-        run: npm run lint
-
-  deploy:
-    runs-on: windows-latest
-    needs: test
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Deploy to staging
+      - run: echo " The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo " This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo " The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - run: echo " The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo " The workflow is now ready to test your code on the runner."
+      - name: List files in the repository
         run: |
-          echo "Deploying to staging environment..."
-          # Replace this with your deployment command
-          # For example, using PowerShell to copy files:
-          # Copy-Item -Path .\build\* -Destination \\staging-server\path\to\deploy -Recurse
+          ls ${{ github.workspace }}
+      - run: echo " This job's status is ${{ job.status }}."
+
+      # Send notification on failure
+      - name: Send Failure Notification
+        if: failure()
+        uses: .github/workflows/notify-failure.yml@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          slack-channel: 'your-channel-name'
+          email-recipients: 'your-email@example.com'
+          email-subject: 'GitHub Actions Build Failed: ${{ github.workflow }}'
+          email-body:
